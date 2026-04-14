@@ -14,6 +14,21 @@ class GameObject;
 class Spaceship;
 class GUILabel;
 
+
+enum GameState
+{
+	STATE_MENU,
+	STATE_PLAYING,
+	STATE_ENTER_NAME,
+	STATE_SHOW_HIGHSCORES
+};
+
+struct HighScoreEntry
+{
+	string name;
+	int score;
+};
+
 class Asteroids : public GameSession, public IKeyboardListener, public IGameWorldListener, public IScoreListener, public IPlayerListener
 {
 public:
@@ -60,8 +75,18 @@ private:
 	shared_ptr<GUILabel> mHighScoreLabel;
 	shared_ptr<GUILabel> mHighScoreTextLabel;
 
-	bool mMenu;
- 	bool mGameStart;
+	shared_ptr<GUILabel> mEnterNameLabel;
+	shared_ptr<GUILabel> mTypedNameLabel;
+	shared_ptr<GUILabel> mHighScoreTabelLabel;
+	shared_ptr<GUILabel> mReturnMenuLabel;
+
+	GameState mState;
+
+	int mCurrent;
+	string mEnteredName;
+	vector<HighScoreEntry> mHighScores;
+
+
 
 
 	uint mLevel;
@@ -71,6 +96,16 @@ private:
 	shared_ptr<GameObject> CreateSpaceship();
 	void CreateGUI();
 	void CreateAsteroids(const uint num_asteroids);
+
+	void ShowMenuGUI();
+	void NameEntry();
+	void SaveHighScore();
+	void LoadHighScore();
+	void WriteHighScore();
+	void UpdateHSTable();
+	void ShowHSScreen();
+	void ReturnMenu();
+	void ClearObjects();
 
 	void CreateMenuGUI();
 	void HideMenuGUI();
