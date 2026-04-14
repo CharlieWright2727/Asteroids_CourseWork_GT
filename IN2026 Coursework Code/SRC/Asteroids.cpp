@@ -106,14 +106,25 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 
         case 'i':
         case 'I':
-            if (mInstructionsLabel)
-                mInstructionsLabel->SetText("Controls: L/R arrows to turn, U/D arrows to move, Space to shoot ");
+			if (mInstructionsTextLabel && mInstructionsLabel) 
+			{
+
+				bool show = !mInstructionsTextLabel->GetVisible();
+
+				mInstructionsTextLabel->SetVisible(show);
+				mInstructionsLabel->SetVisible(!show);
+			}
             break;
 
         case 'h':
         case 'H':
-            if (mHighScoreLabel)
-                mHighScoreLabel->SetText("High Scores: me ");
+			if (mHighScoreTextLabel && mHighScoreLabel) 
+			{
+				bool show = !mHighScoreTextLabel->GetVisible();
+
+				mHighScoreTextLabel->SetVisible(show);
+				mHighScoreLabel->SetVisible(!show);
+			}
             break;
 
         default:
@@ -296,10 +307,19 @@ void Asteroids::CreateMenuGUI(){
     mInstructionsLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
     mInstructionsLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
 
+	mInstructionsTextLabel = make_shared<GUILabel>(" L/R = Rotate, U/D = Move, Space = shoot ");
+	mInstructionsTextLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+	mInstructionsTextLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
+	mInstructionsTextLabel->SetVisible(false);
 
     mHighScoreLabel = make_shared<GUILabel>("H - High Scores");
     mHighScoreLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
     mHighScoreLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
+
+	mHighScoreTextLabel = make_shared<GUILabel>("H - me");
+	mHighScoreTextLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+	mHighScoreTextLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
+	mHighScoreTextLabel->SetVisible(false);
 
 
     mGameDisplay->GetContainer()->AddComponent(
@@ -311,8 +331,14 @@ void Asteroids::CreateMenuGUI(){
     mGameDisplay->GetContainer()->AddComponent(
         static_pointer_cast<GUIComponent>(mInstructionsLabel), GLVector2f(0.5f, 0.30f));
 
+	mGameDisplay->GetContainer()->AddComponent(
+		static_pointer_cast<GUIComponent>(mInstructionsTextLabel), GLVector2f(0.5f, 0.30f));
+
     mGameDisplay->GetContainer()->AddComponent(
         static_pointer_cast<GUIComponent>(mHighScoreLabel), GLVector2f(0.5f, 0.20f));
+
+	mGameDisplay->GetContainer()->AddComponent(
+		static_pointer_cast<GUIComponent>(mHighScoreTextLabel), GLVector2f(0.5f, 0.20f));
 
 
 }
@@ -321,6 +347,9 @@ void Asteroids::HideMenuGUI(){
     if (mStartLabel) mStartLabel->SetVisible(false);
 	if (mInstructionsLabel) mInstructionsLabel->SetVisible(false);
     if (mHighScoreLabel) mHighScoreLabel->SetVisible(false);
+	if (mInstructionsTextLabel) mInstructionsTextLabel->SetVisible(false);
+	if (mHighScoreTextLabel) mHighScoreTextLabel->SetVisible(false);
+
 
 
 }
@@ -383,7 +412,3 @@ shared_ptr<GameObject> Asteroids::CreateExplosion()
 	explosion->Reset();
 	return explosion;
 }
-
-
-
-

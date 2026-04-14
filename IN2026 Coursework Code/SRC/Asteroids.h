@@ -56,7 +56,9 @@ private:
 	shared_ptr<GUILabel> mTitleLabel;
 	shared_ptr<GUILabel> mStartLabel;
 	shared_ptr<GUILabel> mInstructionsLabel;
+	shared_ptr<GUILabel> mInstructionsTextLabel;
 	shared_ptr<GUILabel> mHighScoreLabel;
+	shared_ptr<GUILabel> mHighScoreTextLabel;
 
 	bool mMenu;
  	bool mGameStart;
