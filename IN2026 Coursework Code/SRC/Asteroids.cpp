@@ -20,6 +20,9 @@ Asteroids::Asteroids(int argc, char *argv[])
 {
 	mLevel = 0;
 	mAsteroidCount = 0;
+
+	mMenu = true;
+	mGameStart = false;
 }
 
 /** Destructor. */
@@ -59,12 +62,18 @@ void Asteroids::Start()
 	Animation *spaceship_anim = AnimationManager::GetInstance().CreateAnimationFromFile("spaceship", 128, 128, 128, 128, "spaceship_fs.png");
 
 	// Create a spaceship and add it to the world
-	mGameWorld->AddObject(CreateSpaceship());
+	
 	// Create some asteroids and add them to the world
 	CreateAsteroids(10);
 
 	//Create the GUI
 	CreateGUI();
+
+	mScoreLabel->SetVisible(false);
+	mLivesLabel->SetVisible(false);
+	mGameOverLabel->SetVisible(false);
+
+	CreateMenuGUI();
 
 	// Add a player (watcher) to the game world
 	mGameWorld->AddListener(&mPlayer);
@@ -87,20 +96,47 @@ void Asteroids::Stop()
 
 void Asteroids::OnKeyPressed(uchar key, int x, int y)
 {
-	switch (key)
-	{
-	case ' ':
-		mSpaceship->Shoot();
-		break;
-	default:
-		break;
-	}
-}
+    if (mMenu)
+    {
+        switch (key)
+        {
+        case 13: // Enter
+            StartGameplay();
+            break;
 
+        case 'i':
+        case 'I':
+            if (mInstructionsLabel)
+                mInstructionsLabel->SetText("Controls: L/R arrows to turn, U/D arrows to move, Space to shoot ");
+            break;
+
+        case 'h':
+        case 'H':
+            if (mHighScoreLabel)
+                mHighScoreLabel->SetText("High Scores: me ");
+            break;
+
+        default:
+            break;
+        }
+        return;
+    }
+
+    switch (key)
+    {
+    case ' ':
+        if (mSpaceship) mSpaceship->Shoot();
+        break;
+    default:
+        break;
+    }
+}
 void Asteroids::OnKeyReleased(uchar key, int x, int y) {}
 
 void Asteroids::OnSpecialKeyPressed(int key, int x, int y)
-{
+{	
+	if (mMenu || !mSpaceship) return;
+
 	switch (key)
 	{
 	// If up arrow key is pressed start applying forward thrust
@@ -115,8 +151,9 @@ void Asteroids::OnSpecialKeyPressed(int key, int x, int y)
 }
 
 void Asteroids::OnSpecialKeyReleased(int key, int x, int y)
-{
-	switch (key)
+{	if (mMenu || !mSpaceship) return;
+
+	switch (key )
 	{
 	// If up arrow key is released stop applying forward thrust
 	case GLUT_KEY_UP: mSpaceship->Thrust(0); break;
@@ -245,7 +282,62 @@ void Asteroids::CreateGUI()
 	mGameDisplay->GetContainer()->AddComponent(game_over_component, GLVector2f(0.5f, 0.5f));
 
 }
+void Asteroids::CreateMenuGUI(){
 
+	mTitleLabel = make_shared<GUILabel>("ASTEROIDS");
+    mTitleLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+    mTitleLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
+
+    mStartLabel = make_shared<GUILabel>("Press Enter to Start");
+    mStartLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+    mStartLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
+
+	mInstructionsLabel = make_shared<GUILabel>("I - Instructions");
+    mInstructionsLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+    mInstructionsLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
+
+
+    mHighScoreLabel = make_shared<GUILabel>("H - High Scores");
+    mHighScoreLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+    mHighScoreLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
+
+
+    mGameDisplay->GetContainer()->AddComponent(
+        static_pointer_cast<GUIComponent>(mTitleLabel), GLVector2f(0.5f, 0.80f));
+
+    mGameDisplay->GetContainer()->AddComponent(
+        static_pointer_cast<GUIComponent>(mStartLabel), GLVector2f(0.5f, 0.50f));
+
+    mGameDisplay->GetContainer()->AddComponent(
+        static_pointer_cast<GUIComponent>(mInstructionsLabel), GLVector2f(0.5f, 0.30f));
+
+    mGameDisplay->GetContainer()->AddComponent(
+        static_pointer_cast<GUIComponent>(mHighScoreLabel), GLVector2f(0.5f, 0.20f));
+
+
+}
+void Asteroids::HideMenuGUI(){
+	if (mTitleLabel) mTitleLabel->SetVisible(false);
+    if (mStartLabel) mStartLabel->SetVisible(false);
+	if (mInstructionsLabel) mInstructionsLabel->SetVisible(false);
+    if (mHighScoreLabel) mHighScoreLabel->SetVisible(false);
+
+
+}
+void Asteroids::StartGameplay(){
+	if (mGameStart) return;
+
+	mMenu = false;
+	mGameStart = true;
+
+	HideMenuGUI();
+
+	mScoreLabel->SetVisible(true);
+    mLivesLabel->SetVisible(true);
+    mGameOverLabel->SetVisible(false);
+
+    mGameWorld->AddObject(CreateSpaceship());
+}
 void Asteroids::OnScoreChanged(int score)
 {
 	// Format the score message using an string-based stream

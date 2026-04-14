@@ -53,6 +53,15 @@ private:
 	shared_ptr<GUILabel> mLivesLabel;
 	shared_ptr<GUILabel> mGameOverLabel;
 
+	shared_ptr<GUILabel> mTitleLabel;
+	shared_ptr<GUILabel> mStartLabel;
+	shared_ptr<GUILabel> mInstructionsLabel;
+	shared_ptr<GUILabel> mHighScoreLabel;
+
+	bool mMenu;
+ 	bool mGameStart;
+
+
 	uint mLevel;
 	uint mAsteroidCount;
 
@@ -60,6 +69,10 @@ private:
 	shared_ptr<GameObject> CreateSpaceship();
 	void CreateGUI();
 	void CreateAsteroids(const uint num_asteroids);
+
+	void CreateMenuGUI();
+	void HideMenuGUI();
+	void StartGameplay();
 	shared_ptr<GameObject> CreateExplosion();
 	
 	const static uint SHOW_GAME_OVER = 0;
