@@ -1,14 +1,16 @@
 #ifndef __ASTEROIDS_H__
 #define __ASTEROIDS_H__
 
-#include "GameUtil.h"
 #include "GameSession.h"
-#include "IKeyboardListener.h"
+#include "GameUtil.h"
 #include "IGameWorldListener.h"
-#include "IScoreListener.h" 
-#include "ScoreKeeper.h"
-#include "Player.h"
+#include "IKeyboardListener.h"
 #include "IPlayerListener.h"
+#include "IScoreListener.h" 
+#include "Player.h"
+#include "ScoreKeeper.h"
+
+#include <vector>
 
 class GameObject;
 class Spaceship;
@@ -20,7 +22,7 @@ enum GameState
 	STATE_MENU,
 	STATE_PLAYING,
 	STATE_ENTER_NAME,
-	STATE_SHOW_HIGHSCORES
+	STATE_GAME_OVER
 };
 
 struct HighScoreEntry
@@ -73,18 +75,23 @@ private:
 	shared_ptr<GUILabel> mInstructionsLabel;
 	shared_ptr<GUILabel> mInstructionsTextLabel;
 	shared_ptr<GUILabel> mHighScoreLabel;
-	shared_ptr<GUILabel> mHighScoreTextLabel;
+	shared_ptr<GUILabel> mHighScoreTableLabel;
 
 	shared_ptr<GUILabel> mEnterNameLabel;
 	shared_ptr<GUILabel> mTypedNameLabel;
-	shared_ptr<GUILabel> mHighScoreTabelLabel;
-	shared_ptr<GUILabel> mReturnMenuLabel;
+
+	shared_ptr<GUILabel> mGameOverOptionsLabel;
+	shared_ptr<GUILabel> mGameOverScoresLabel;
 
 	GameState mState;
 
-	int mCurrent;
+	int mCurrentScore;
 	string mEnteredName;
 	vector<HighScoreEntry> mHighScores;
+
+	bool mMenuShowingHS;
+	bool mGameOverShowingHS;
+
 
 
 
@@ -99,17 +106,23 @@ private:
 
 	void ShowMenuGUI();
 	void NameEntry();
-	void SaveHighScore();
-	void LoadHighScore();
-	void WriteHighScore();
-	void UpdateHSTable();
-	void ShowHSScreen();
-	void ReturnMenu();
+	void SaveHighScore(const string& name, int score);
+	void LoadHighScores();
+	void WriteHighScores();
+	void UpdateHighScoreTableText();
+	bool IsTopTenScore(int score);
+	void ShowMenuHS(bool show);
+	void ShowGameOverScreen();
+	void ReturnToMenu();
+	void RestartGame();
 	void ClearObjects();
+	void UpdateNameGUI();
 
 	void CreateMenuGUI();
 	void HideMenuGUI();
 	void StartGameplay();
+
+
 	shared_ptr<GameObject> CreateExplosion();
 	
 	const static uint SHOW_GAME_OVER = 0;
