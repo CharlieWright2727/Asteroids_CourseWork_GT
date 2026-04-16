@@ -20,7 +20,7 @@
 // PUBLIC INSTANCE CONSTRUCTORS ///////////////////////////////////////////////
 
 /** Constructor. Takes arguments from command line, just in case. */
-Asteroids::Asteroids(int argc, char *argv[])
+Asteroids::Asteroids(int argc, char* argv[])
 	: GameSession(argc, argv)
 {
 	mLevel = 0;
@@ -67,12 +67,12 @@ void Asteroids::Start()
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_light);
 	glEnable(GL_LIGHT0);
 
-	Animation *explosion_anim = AnimationManager::GetInstance().CreateAnimationFromFile("explosion", 64, 1024, 64, 64, "explosion_fs.png");
-	Animation *asteroid1_anim = AnimationManager::GetInstance().CreateAnimationFromFile("asteroid1", 128, 8192, 128, 128, "asteroid1_fs.png");
-	Animation *spaceship_anim = AnimationManager::GetInstance().CreateAnimationFromFile("spaceship", 128, 128, 128, 128, "spaceship_fs.png");
+	Animation* explosion_anim = AnimationManager::GetInstance().CreateAnimationFromFile("explosion", 64, 1024, 64, 64, "explosion_fs.png");
+	Animation* asteroid1_anim = AnimationManager::GetInstance().CreateAnimationFromFile("asteroid1", 128, 8192, 128, 128, "asteroid1_fs.png");
+	Animation* spaceship_anim = AnimationManager::GetInstance().CreateAnimationFromFile("spaceship", 128, 128, 128, 128, "spaceship_fs.png");
 
 	// Create a spaceship and add it to the world
-	
+
 	// Create some asteroids and add them to the world
 	CreateAsteroids(10);
 
@@ -107,17 +107,17 @@ void Asteroids::Stop()
 
 void Asteroids::OnKeyPressed(uchar key, int x, int y)
 {
-    if (mState == STATE_MENU)
-    {
-        switch (key)
-        {
-        case 13: // Enter
-            StartGameplay();
-            break;
+	if (mState == STATE_MENU)
+	{
+		switch (key)
+		{
+		case 13: // Enter
+			StartGameplay();
+			break;
 
-        case 'i':
-        case 'I':
-			if (mInstructionsTextLabel && mInstructionsLabel) 
+		case 'i':
+		case 'I':
+			if (mInstructionsTextLabel && mInstructionsLabel)
 			{
 
 				bool show = !mInstructionsTextLabel->GetVisible();
@@ -125,7 +125,7 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 				mInstructionsTextLabel->SetVisible(show);
 				mInstructionsLabel->SetVisible(!show);
 			}
-            break;
+			break;
 
 		case 'h':
 		case 'H':
@@ -156,9 +156,9 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 				mEnteredName.erase(mEnteredName.size() - 1, 1);
 				UpdateNameGUI();
 			}
-				return;
-			}
-		if (isalnum(key) && mEnteredName.size() < 10){
+			return;
+		}
+		if (isalnum(key) && mEnteredName.size() < 10) {
 			mEnteredName += key;
 			UpdateNameGUI();
 		}
@@ -185,48 +185,49 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 		return;
 	}
 
-    switch (key)
-    {
-    case ' ':
-        if (mSpaceship) mSpaceship->Shoot();
-        break;
-    default:
-        break;
-    }
+	switch (key)
+	{
+	case ' ':
+		if (mSpaceship) mSpaceship->Shoot();
+		break;
+	default:
+		break;
+	}
 }
 void Asteroids::OnKeyReleased(uchar key, int x, int y) {}
 
 void Asteroids::OnSpecialKeyPressed(int key, int x, int y)
-{	
+{
 	if (mState != STATE_PLAYING || !mSpaceship) return;
 
 	switch (key)
 	{
-	// If up arrow key is pressed start applying forward thrust
+		// If up arrow key is pressed start applying forward thrust
 	case GLUT_KEY_UP: mSpaceship->Thrust(10); break;
-	// If left arrow key is pressed start rotating anti-clockwise
+		// If left arrow key is pressed start rotating anti-clockwise
 	case GLUT_KEY_LEFT: mSpaceship->Rotate(90); break;
-	// If right arrow key is pressed start rotating clockwise
+		// If right arrow key is pressed start rotating clockwise
 	case GLUT_KEY_RIGHT: mSpaceship->Rotate(-90); break;
-	// Default case - do nothing
+		// Default case - do nothing
 	default: break;
 	}
 }
 
 void Asteroids::OnSpecialKeyReleased(int key, int x, int y)
-{	if (mState != STATE_PLAYING || !mSpaceship) return;
+{
+	if (mState != STATE_PLAYING || !mSpaceship) return;
 
-	switch (key )
+	switch (key)
 	{
-	// If up arrow key is released stop applying forward thrust
+		// If up arrow key is released stop applying forward thrust
 	case GLUT_KEY_UP: mSpaceship->Thrust(0); break;
-	// If left arrow key is released stop rotating
+		// If left arrow key is released stop rotating
 	case GLUT_KEY_LEFT: mSpaceship->Rotate(0); break;
-	// If right arrow key is released stop rotating
+		// If right arrow key is released stop rotating
 	case GLUT_KEY_RIGHT: mSpaceship->Rotate(0); break;
-	// Default case - do nothing
+		// Default case - do nothing
 	default: break;
-	} 
+	}
 }
 
 
@@ -241,9 +242,9 @@ void Asteroids::OnObjectRemoved(GameWorld* world, shared_ptr<GameObject> object)
 		explosion->SetRotation(object->GetRotation());
 		mGameWorld->AddObject(explosion);
 		mAsteroidCount--;
-		if (mAsteroidCount <= 0) 
-		{ 
-			SetTimer(500, START_NEXT_LEVEL); 
+		if (mAsteroidCount <= 0)
+		{
+			SetTimer(500, START_NEXT_LEVEL);
 		}
 	}
 }
@@ -281,7 +282,7 @@ shared_ptr<GameObject> Asteroids::CreateSpaceship()
 	mSpaceship->SetBoundingShape(make_shared<BoundingSphere>(mSpaceship->GetThisPtr(), 4.0f));
 	shared_ptr<Shape> bullet_shape = make_shared<Shape>("bullet.shape");
 	mSpaceship->SetBulletShape(bullet_shape);
-	Animation *anim_ptr = AnimationManager::GetInstance().GetAnimationByName("spaceship");
+	Animation* anim_ptr = AnimationManager::GetInstance().GetAnimationByName("spaceship");
 	shared_ptr<Sprite> spaceship_sprite =
 		make_shared<Sprite>(anim_ptr->GetWidth(), anim_ptr->GetHeight(), anim_ptr);
 	mSpaceship->SetSprite(spaceship_sprite);
@@ -298,7 +299,7 @@ void Asteroids::CreateAsteroids(const uint num_asteroids)
 	mAsteroidCount = num_asteroids;
 	for (uint i = 0; i < num_asteroids; i++)
 	{
-		Animation *anim_ptr = AnimationManager::GetInstance().GetAnimationByName("asteroid1");
+		Animation* anim_ptr = AnimationManager::GetInstance().GetAnimationByName("asteroid1");
 		shared_ptr<Sprite> asteroid_sprite
 			= make_shared<Sprite>(anim_ptr->GetWidth(), anim_ptr->GetHeight(), anim_ptr);
 		asteroid_sprite->SetLoopAnimation(true);
@@ -345,28 +346,28 @@ void Asteroids::CreateGUI()
 	mGameDisplay->GetContainer()->AddComponent(game_over_component, GLVector2f(0.5f, 0.5f));
 
 }
-void Asteroids::CreateMenuGUI(){
+void Asteroids::CreateMenuGUI() {
 
 	mTitleLabel = make_shared<GUILabel>("ASTEROIDS");
-    mTitleLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
-    mTitleLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
+	mTitleLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+	mTitleLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
 
-    mStartLabel = make_shared<GUILabel>("Press Enter to Start");
-    mStartLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
-    mStartLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
+	mStartLabel = make_shared<GUILabel>("Press Enter to Start");
+	mStartLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+	mStartLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
 
 	mInstructionsLabel = make_shared<GUILabel>("I - Instructions");
-    mInstructionsLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
-    mInstructionsLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
+	mInstructionsLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+	mInstructionsLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
 
 	mInstructionsTextLabel = make_shared<GUILabel>(" L/R = Rotate, U/D = Move, Space = shoot ");
 	mInstructionsTextLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
 	mInstructionsTextLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
 	mInstructionsTextLabel->SetVisible(false);
 
-    mHighScoreLabel = make_shared<GUILabel>("H - High Scores");
-    mHighScoreLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
-    mHighScoreLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
+	mHighScoreLabel = make_shared<GUILabel>("H - High Scores");
+	mHighScoreLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+	mHighScoreLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
 
 	mEnterNameLabel = make_shared<GUILabel>("Enter name:");
 	mEnterNameLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
@@ -383,11 +384,6 @@ void Asteroids::CreateMenuGUI(){
 	mHighScoreTableLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
 	mHighScoreTableLabel->SetVisible(false);
 
-	mHighScoreTableLabel = make_shared<GUILabel>("press Enter to go back to menu ");
-	mHighScoreTableLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
-	mHighScoreTableLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
-	mHighScoreTableLabel->SetVisible(false);
-
 	mGameOverOptionsLabel = make_shared<GUILabel>("P play again   M main menu");
 	mGameOverOptionsLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
 	mGameOverOptionsLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
@@ -397,23 +393,41 @@ void Asteroids::CreateMenuGUI(){
 	mGameOverScoresLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
 	mGameOverScoresLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
 	mGameOverScoresLabel->SetVisible(false);
-	
 
 
-    mGameDisplay->GetContainer()->AddComponent(
-        static_pointer_cast<GUIComponent>(mTitleLabel), GLVector2f(0.5f, 0.80f));
+	for (int i = 0; i < 10; i++)
+	{
+		shared_ptr<GUILabel> row = make_shared<GUILabel>("");
+		row->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+		row->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
+		row->SetVisible(false);
 
-    mGameDisplay->GetContainer()->AddComponent(
-        static_pointer_cast<GUIComponent>(mStartLabel), GLVector2f(0.5f, 0.50f));
+		mHSRows.push_back(row);
+		float y = 0.75f - (i * 0.05f);
+		mGameDisplay->GetContainer()->AddComponent(
+			static_pointer_cast<GUIComponent>(row), GLVector2f(0.5f, y));
 
-    mGameDisplay->GetContainer()->AddComponent(
-        static_pointer_cast<GUIComponent>(mInstructionsLabel), GLVector2f(0.5f, 0.30f));
+	}
+
+	mGameDisplay->GetContainer()->AddComponent(
+		static_pointer_cast<GUIComponent>(mTitleLabel), GLVector2f(0.5f, 0.80f));
+
+	mGameDisplay->GetContainer()->AddComponent(
+		static_pointer_cast<GUIComponent>(mStartLabel), GLVector2f(0.5f, 0.50f));
+
+	mGameDisplay->GetContainer()->AddComponent(
+		static_pointer_cast<GUIComponent>(mInstructionsLabel), GLVector2f(0.5f, 0.30f));
 
 	mGameDisplay->GetContainer()->AddComponent(
 		static_pointer_cast<GUIComponent>(mInstructionsTextLabel), GLVector2f(0.5f, 0.30f));
 
-    mGameDisplay->GetContainer()->AddComponent(
-        static_pointer_cast<GUIComponent>(mHighScoreLabel), GLVector2f(0.5f, 0.20f));
+	mGameDisplay->GetContainer()->AddComponent(
+		static_pointer_cast<GUIComponent>(mHighScoreLabel), GLVector2f(0.5f, 0.20f));
+
+	mGameDisplay->GetContainer()->AddComponent(
+		static_pointer_cast<GUIComponent>(mHighScoreTableLabel), GLVector2f(0.5f, 0.20f));
+
+
 
 	mGameDisplay->GetContainer()->AddComponent(
 		static_pointer_cast<GUIComponent>(mEnterNameLabel), GLVector2f(0.5f, 0.45f));
@@ -426,12 +440,14 @@ void Asteroids::CreateMenuGUI(){
 
 	mGameDisplay->GetContainer()->AddComponent(
 		static_pointer_cast<GUIComponent>(mGameOverOptionsLabel), GLVector2f(0.5f, 0.18f));
+	mGameDisplay->GetContainer()->AddComponent(
+		static_pointer_cast<GUIComponent>(mGameOverLabel), GLVector2f(0.5f, 0.95f));
 }
-void Asteroids::HideMenuGUI(){
+void Asteroids::HideMenuGUI() {
 	if (mTitleLabel) mTitleLabel->SetVisible(false);
-    if (mStartLabel) mStartLabel->SetVisible(false);
+	if (mStartLabel) mStartLabel->SetVisible(false);
 	if (mInstructionsLabel) mInstructionsLabel->SetVisible(false);
-    if (mHighScoreLabel) mHighScoreLabel->SetVisible(false);
+	if (mHighScoreLabel) mHighScoreLabel->SetVisible(false);
 
 	if (mInstructionsTextLabel) mInstructionsTextLabel->SetVisible(false);
 
@@ -440,7 +456,13 @@ void Asteroids::HideMenuGUI(){
 
 	if (mGameOverOptionsLabel) mGameOverOptionsLabel->SetVisible(false);
 	if (mGameOverScoresLabel) mGameOverScoresLabel->SetVisible(false);
-	
+
+	if (mHighScoreTableLabel) mHighScoreTableLabel->SetVisible(false);
+
+	for (size_t i = 0; i < mHSRows.size(); i++)
+		mHSRows[i]->SetVisible(false);
+
+
 	mMenuShowingHS = false;
 
 
@@ -452,23 +474,24 @@ void Asteroids::ShowMenuGUI()
 	if (mInstructionsLabel) mInstructionsLabel->SetVisible(true);
 
 	if (mHighScoreLabel) mHighScoreLabel->SetVisible(!mMenuShowingHS);
-	if (mHighScoreTableLabel) mHighScoreLabel->SetVisible(!mMenuShowingHS);
+	if (mHighScoreTableLabel) mHighScoreTableLabel->SetVisible(mMenuShowingHS);
 
 
-	if (mInstructionsTextLabel) mInstructionsTextLabel->SetVisible(true);
-	
+	if (mInstructionsTextLabel) mInstructionsTextLabel->SetVisible(false);
 
-	if (mEnterNameLabel) mEnterNameLabel->SetVisible(true);
 
-	if (mTypedNameLabel) mTypedNameLabel->SetVisible(true);
+	if (mEnterNameLabel) mEnterNameLabel->SetVisible(false);
+
+	if (mTypedNameLabel) mTypedNameLabel->SetVisible(false);
 
 	if (mGameOverOptionsLabel) mGameOverOptionsLabel->SetVisible(false);
 
 	if (mGameOverScoresLabel) mGameOverScoresLabel->SetVisible(false);
 
 
+
 }
-void Asteroids::StartGameplay(){
+void Asteroids::StartGameplay() {
 	if (mState == STATE_PLAYING) return;
 
 	mState = STATE_PLAYING;
@@ -478,10 +501,10 @@ void Asteroids::StartGameplay(){
 	HideMenuGUI();
 
 	mScoreLabel->SetVisible(true);
-    mLivesLabel->SetVisible(true);
-    mGameOverLabel->SetVisible(false);
+	mLivesLabel->SetVisible(true);
+	mGameOverLabel->SetVisible(false);
 
-    mGameWorld->AddObject(CreateSpaceship());
+	mGameWorld->AddObject(CreateSpaceship());
 }
 
 
@@ -557,152 +580,164 @@ void Asteroids::OnPlayerKilled(int lives_left)
 	}
 }
 
-		bool Asteroids::IsTopTenScore(int score)
+bool Asteroids::IsTopTenScore(int score)
+{
+	LoadHighScores();
+
+	if (mHighScores.size() < 10) return true;
+	return score > mHighScores.back().score;
+}
+
+void Asteroids::LoadHighScores()
+{
+	mHighScores.clear();
+
+	std::ifstream file("highscores.txt");
+	if (!file) return;
+
+	string name;
+	int score;
+
+	while (file >> name >> score)
+	{
+		HighScoreEntry entry;
+		entry.name = name;
+		entry.score = score;
+		mHighScores.push_back(entry);
+	}
+
+	std::sort(mHighScores.begin(), mHighScores.end(),
+		[](const HighScoreEntry& a, const HighScoreEntry& b)
 		{
-			LoadHighScores();
+			return a.score > b.score;
+		});
 
-			if (mHighScores.size() < 10) return true;
-			return score > mHighScores.back().score;
-		}
+	if (mHighScores.size() > 10)
+		mHighScores.resize(10);
+}
 
-		void Asteroids::LoadHighScores()
+void Asteroids::WriteHighScores()
+{
+	std::ofstream file("highscores.txt", std::ios::trunc);
+
+	for (size_t i = 0; i < mHighScores.size(); ++i)
+	{
+		file << mHighScores[i].name << " " << mHighScores[i].score << std::endl;
+	}
+}
+
+void Asteroids::SaveHighScore(const string& name, int score)
+{
+	LoadHighScores();
+
+	HighScoreEntry entry;
+	entry.name = name;
+	entry.score = score;
+	mHighScores.push_back(entry);
+
+	std::sort(mHighScores.begin(), mHighScores.end(),
+		[](const HighScoreEntry& a, const HighScoreEntry& b)
 		{
-			mHighScores.clear();
+			return a.score > b.score;
+		});
 
-			std::ifstream file("highscores.txt");
-			if (!file) return;
+	if (mHighScores.size() > 10)
+		mHighScores.resize(10);
 
-			string name;
-			int score;
+	WriteHighScores();
+}
 
-			while (file >> name >> score)
-			{
-				HighScoreEntry entry;
-				entry.name = name;
-				entry.score = score;
-				mHighScores.push_back(entry);
-			}
+void Asteroids::UpdateHighScoreTableText()
+{
+	LoadHighScores();
 
-			std::sort(mHighScores.begin(), mHighScores.end(),
-				[](const HighScoreEntry& a, const HighScoreEntry& b)
-				{
-					return a.score > b.score;
-				});
+	std::ostringstream msg;
+	msg << "top 10 ";
 
-			if (mHighScores.size() > 10)
-				mHighScores.resize(10);
-		}
+	for (size_t i = 0; i < mHighScores.size(); ++i)
+	{
+		std::ostringstream line;
 
-		void Asteroids::WriteHighScores()
-		{
-			std::ofstream file("highscores.txt", std::ios::trunc);
+		if (i < (int)mHighScores.size())
+			line << (i + 1) << ". " << mHighScores[i].name << " " << mHighScores[i].score;
+		else
+			line << (i + 1) << ". -----";
 
-			for (size_t i = 0; i < mHighScores.size(); ++i)
-			{
-				file << mHighScores[i].name << " " << mHighScores[i].score << std::endl;
-			}
-		}
+		if (i < (int)mHSRows.size())
+			mHSRows[i]->SetText(line.str());
+	}
+}
 
-		void Asteroids::SaveHighScore(const string & name, int score)
-		{
-			LoadHighScores();
+void Asteroids::ShowMenuHS(bool show)
+{
+	mMenuShowingHS = show;
+	UpdateHighScoreTableText();
 
-			HighScoreEntry entry;
-			entry.name = name;
-			entry.score = score;
-			mHighScores.push_back(entry);
+	if (mTitleLabel) mTitleLabel->SetVisible(!show);
+	if (mStartLabel) mStartLabel->SetVisible(!show);
+	if (mInstructionsLabel) mInstructionsLabel->SetVisible(!show);
+	if (mInstructionsTextLabel) mInstructionsTextLabel->SetVisible(false);
+	if (mHighScoreLabel) mHighScoreLabel->SetVisible(!show);
+	if (mHighScoreTableLabel) mHighScoreTableLabel->SetVisible(show);
 
-			std::sort(mHighScores.begin(), mHighScores.end(),
-				[](const HighScoreEntry& a, const HighScoreEntry& b)
-				{
-					return a.score > b.score;
-				});
+	for (size_t i = 0; i < mHSRows.size(); i++)
+		mHSRows[i]->SetVisible(show);
+}
 
-			if (mHighScores.size() > 10)
-				mHighScores.resize(10);
+void Asteroids::ShowGameOverScreen()
+{
+	mState = STATE_GAME_OVER;
+	UpdateHighScoreTableText();
 
-			WriteHighScores();
-		}
+	mGameOverLabel->SetVisible(true);
+	mScoreLabel->SetVisible(false);
+	mLivesLabel->SetVisible(false);
 
-		void Asteroids::UpdateHighScoreTableText()
-		{
-			LoadHighScores();
+	if (mEnterNameLabel) mEnterNameLabel->SetVisible(false);
+	if (mTypedNameLabel) mTypedNameLabel->SetVisible(false);
 
-			std::ostringstream msg;
-			msg << "top 10 ";
+	if (mGameOverScoresLabel) mGameOverScoresLabel->SetVisible(true);
+	if (mGameOverOptionsLabel) mGameOverOptionsLabel->SetVisible(true);
 
-			for (size_t i = 0; i < mHighScores.size(); ++i)
-			{
-				msg << (i + 1) << ". " << mHighScores[i].name << " " << mHighScores[i].score << " ";
-			}
+	for (size_t i = 0; i < mHSRows.size(); i++)
+		mHSRows[i]->SetVisible(true);
+}
 
-			if (mHighScoreTableLabel)
-				mHighScoreTableLabel->SetText(msg.str());
+void Asteroids::ReturnToMenu()
+{
+	mState = STATE_MENU;
+	mEnteredName = "";
+	mCurrentScore = 0;
+	mMenuShowingHS = false;
 
-			if (mGameOverScoresLabel)
-				mGameOverScoresLabel->SetText(msg.str());
-		}
+	mGameOverLabel->SetVisible(false);
+	mScoreLabel->SetVisible(false);
+	mLivesLabel->SetVisible(false);
 
-		void Asteroids::ShowMenuHS(bool show)
-		{
-			mMenuShowingHS = show;
-			UpdateHighScoreTableText();
 
-			if (mTitleLabel) mTitleLabel->SetVisible(!show);
-			if (mStartLabel) mStartLabel->SetVisible(!show);
-			if (mInstructionsLabel) mInstructionsLabel->SetVisible(!show);
-			if (mInstructionsTextLabel) mInstructionsTextLabel->SetVisible(false);
-			if (mHighScoreLabel) mHighScoreLabel->SetVisible(!show);
-			if (mHighScoreTableLabel) mHighScoreTableLabel->SetVisible(show);
-		}
+	for (size_t i = 0; i < mHSRows.size(); i++)
+		mHSRows[i]->SetVisible(false);
 
-		void Asteroids::ShowGameOverScreen()
-		{
-			mState = STATE_GAME_OVER;
-			UpdateHighScoreTableText();
+	ShowMenuGUI();
+}
 
-			mGameOverLabel->SetVisible(true);
-			mScoreLabel->SetVisible(false);
-			mLivesLabel->SetVisible(false);
+void Asteroids::RestartGame()
+{
+	mState = STATE_MENU;
+	mEnteredName = "";
+	mCurrentScore = 0;
+	mMenuShowingHS = false;
 
-			if (mEnterNameLabel) mEnterNameLabel->SetVisible(false);
-			if (mTypedNameLabel) mTypedNameLabel->SetVisible(false);
+	mGameOverLabel->SetVisible(false);
+	mScoreLabel->SetVisible(false);
+	mLivesLabel->SetVisible(false);
 
-			if (mGameOverScoresLabel) mGameOverScoresLabel->SetVisible(true);
-			if (mGameOverOptionsLabel) mGameOverOptionsLabel->SetVisible(true);
-		}
+	StartGameplay();
+}
 
-		void Asteroids::ReturnToMenu()
-		{
-			mState = STATE_MENU;
-			mEnteredName = "";
-			mCurrentScore = 0;
-			mMenuShowingHS = false;
-
-			mGameOverLabel->SetVisible(false);
-			mScoreLabel->SetVisible(false);
-			mLivesLabel->SetVisible(false);
-
-			ShowMenuGUI();
-		}
-
-		void Asteroids::RestartGame()
-		{
-			mState = STATE_MENU;
-			mEnteredName = "";
-			mCurrentScore = 0;
-			mMenuShowingHS = false;
-
-			mGameOverLabel->SetVisible(false);
-			mScoreLabel->SetVisible(false);
-			mLivesLabel->SetVisible(false);
-
-			StartGameplay();
-		}
-
-		void Asteroids::ClearObjects()
-		{
-		}
+void Asteroids::ClearObjects()
+{
+}
 
 
 
@@ -711,7 +746,7 @@ void Asteroids::OnPlayerKilled(int lives_left)
 
 shared_ptr<GameObject> Asteroids::CreateExplosion()
 {
-	Animation *anim_ptr = AnimationManager::GetInstance().GetAnimationByName("explosion");
+	Animation* anim_ptr = AnimationManager::GetInstance().GetAnimationByName("explosion");
 	shared_ptr<Sprite> explosion_sprite =
 		make_shared<Sprite>(anim_ptr->GetWidth(), anim_ptr->GetHeight(), anim_ptr);
 	explosion_sprite->SetLoopAnimation(false);

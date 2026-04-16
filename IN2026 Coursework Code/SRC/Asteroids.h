@@ -34,7 +34,7 @@ struct HighScoreEntry
 class Asteroids : public GameSession, public IKeyboardListener, public IGameWorldListener, public IScoreListener, public IPlayerListener
 {
 public:
-	Asteroids(int argc, char *argv[]);
+	Asteroids(int argc, char* argv[]);
 	virtual ~Asteroids(void);
 
 	virtual void Start(void);
@@ -83,6 +83,8 @@ private:
 	shared_ptr<GUILabel> mGameOverOptionsLabel;
 	shared_ptr<GUILabel> mGameOverScoresLabel;
 
+	vector<shared_ptr<GUILabel>> mHSRows;
+
 	GameState mState;
 
 	int mCurrentScore;
@@ -124,7 +126,7 @@ private:
 
 
 	shared_ptr<GameObject> CreateExplosion();
-	
+
 	const static uint SHOW_GAME_OVER = 0;
 	const static uint START_NEXT_LEVEL = 1;
 	const static uint CREATE_NEW_PLAYER = 2;
