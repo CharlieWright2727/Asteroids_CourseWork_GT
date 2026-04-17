@@ -33,6 +33,9 @@ Asteroids::Asteroids(int argc, char* argv[])
 	mMenuShowingHS = false;
 	mGameOverShowingHS = false;
 
+	mExtraLivesEnabled = true;
+	mNextLivesScore = 20;
+
 }
 
 /** Destructor. */
@@ -497,8 +500,14 @@ void Asteroids::StartGameplay() {
 	mState = STATE_PLAYING;
 	mEnteredName = "";
 	mCurrentScore = 0;
+	mNextLivesScore = 20;
 	mGameOverShowingHS = false;
 	HideMenuGUI();
+
+	mPlayer.Reset(3);
+	mScoreKeeper.Reset();
+	mScoreLabel->SetText("Score: 0");
+	UpdateLivesGUI(mPlayer.GetLives());
 
 	mScoreLabel->SetVisible(true);
 	mLivesLabel->SetVisible(true);
@@ -535,9 +544,27 @@ void Asteroids::UpdateNameGUI() {
 		msg << mEnteredName;
 		mTypedNameLabel->SetText(msg.str());
 	}
-
-
 }
+
+void Asteroids::UpdateLivesGUI(int lives) {
+	std::ostringstream msg_stream;
+	msg_stream << "Lives: " << lives;
+	mLivesLabel->SetText(msg_stream.str());
+	
+}
+
+void Asteroids::LivesCheck(int score) {
+	if (!mExtraLivesEnabled) return;
+
+	while (score >= mNextLivesScore)
+	{
+		mPlayer.AddLife(1);
+		UpdateLivesGUI(mPlayer.GetLives());
+		mNextLivesScore += 1000;
+	}
+}
+
+
 void Asteroids::OnScoreChanged(int score)
 {
 	mCurrentScore = score;
@@ -548,6 +575,8 @@ void Asteroids::OnScoreChanged(int score)
 	// Get the score message as a string
 	std::string score_msg = msg_stream.str();
 	mScoreLabel->SetText(score_msg);
+
+	LivesCheck(score);
 }
 
 void Asteroids::OnPlayerKilled(int lives_left)
@@ -558,11 +587,7 @@ void Asteroids::OnPlayerKilled(int lives_left)
 	mGameWorld->AddObject(explosion);
 
 	// Format the lives left message using an string-based stream
-	std::ostringstream msg_stream;
-	msg_stream << "Lives: " << lives_left;
-	// Get the lives left message as a string
-	std::string lives_msg = msg_stream.str();
-	mLivesLabel->SetText(lives_msg);
+	UpdateLivesGUI(lives_left);
 
 	if (lives_left > 0)
 	{

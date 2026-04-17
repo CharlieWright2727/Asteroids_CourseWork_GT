@@ -101,6 +101,9 @@ private:
 	uint mLevel;
 	uint mAsteroidCount;
 
+	bool mExtraLivesEnabled;
+	int mNextLivesScore;
+
 	void ResetSpaceship();
 	shared_ptr<GameObject> CreateSpaceship();
 	void CreateGUI();
@@ -120,9 +123,14 @@ private:
 	void ClearObjects();
 	void UpdateNameGUI();
 
+	void UpdateLivesGUI(int lives);
+	void LivesCheck(int score);
+
 	void CreateMenuGUI();
 	void HideMenuGUI();
 	void StartGameplay();
+
+
 
 
 	shared_ptr<GameObject> CreateExplosion();
