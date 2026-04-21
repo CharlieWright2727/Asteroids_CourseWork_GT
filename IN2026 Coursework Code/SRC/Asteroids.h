@@ -70,6 +70,8 @@ private:
 	shared_ptr<GUILabel> mLivesLabel;
 	shared_ptr<GUILabel> mGameOverLabel;
 
+	shared_ptr<GUILabel> mBombLabel;
+
 	shared_ptr<GUILabel> mTitleLabel;
 	shared_ptr<GUILabel> mStartLabel;
 	shared_ptr<GUILabel> mInstructionsLabel;
@@ -99,10 +101,14 @@ private:
 
 
 	uint mLevel;
+	int mBombCooldown;
 	uint mAsteroidCount;
 
 	bool mExtraLivesEnabled;
 	int mNextLivesScore;
+
+	bool mBombReady;
+	bool mBombRefresh;
 
 	void ResetSpaceship();
 	shared_ptr<GameObject> CreateSpaceship();
@@ -126,6 +132,9 @@ private:
 	void UpdateLivesGUI(int lives);
 	void LivesCheck(int score);
 
+	void UpdateBombGUI();
+	void DropBomb();
+
 	void CreateMenuGUI();
 	void HideMenuGUI();
 	void StartGameplay();
@@ -134,10 +143,13 @@ private:
 
 
 	shared_ptr<GameObject> CreateExplosion();
+	shared_ptr<GameObject> CreateBomb();
 
 	const static uint SHOW_GAME_OVER = 0;
 	const static uint START_NEXT_LEVEL = 1;
 	const static uint CREATE_NEW_PLAYER = 2;
+	const static uint BOMB_COOLDOWN = 3;
+
 
 	ScoreKeeper mScoreKeeper;
 	Player mPlayer;

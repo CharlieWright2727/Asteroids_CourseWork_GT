@@ -11,6 +11,7 @@
 #include "BoundingSphere.h"
 #include "GUILabel.h"
 #include "Explosion.h"
+#include "bomb.h"
 
 #include <fstream>
 #include <algorithm>
@@ -35,6 +36,9 @@ Asteroids::Asteroids(int argc, char* argv[])
 
 	mExtraLivesEnabled = true;
 	mNextLivesScore = 20;
+
+	mBombReady = true;
+	mBombCooldown = 0;
 
 }
 
@@ -85,6 +89,7 @@ void Asteroids::Start()
 	mScoreLabel->SetVisible(false);
 	mLivesLabel->SetVisible(false);
 	mGameOverLabel->SetVisible(false);
+	mBombLabel->SetVisible(false);
 
 	CreateMenuGUI();
 	LoadHighScores();
@@ -193,6 +198,12 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 	case ' ':
 		if (mSpaceship) mSpaceship->Shoot();
 		break;
+	// add bomb ready clause later
+
+	case 'b':
+	case 'B':
+		DropBomb();
+		break;
 	default:
 		break;
 	}
@@ -211,7 +222,10 @@ void Asteroids::OnSpecialKeyPressed(int key, int x, int y)
 	case GLUT_KEY_LEFT: mSpaceship->Rotate(90); break;
 		// If right arrow key is pressed start rotating clockwise
 	case GLUT_KEY_RIGHT: mSpaceship->Rotate(-90); break;
+		// create difficulty stat and disable this on harder difficulty make forward thrust slowe and rotations imbalanced
+	case GLUT_KEY_DOWN: mSpaceship->Thrust(-5); break;
 		// Default case - do nothing
+
 	default: break;
 	}
 }
@@ -229,6 +243,7 @@ void Asteroids::OnSpecialKeyReleased(int key, int x, int y)
 		// If right arrow key is released stop rotating
 	case GLUT_KEY_RIGHT: mSpaceship->Rotate(0); break;
 		// Default case - do nothing
+	case GLUT_KEY_DOWN: mSpaceship->Thrust(0); break;
 	default: break;
 	}
 }
@@ -240,14 +255,17 @@ void Asteroids::OnObjectRemoved(GameWorld* world, shared_ptr<GameObject> object)
 {
 	if (object->GetType() == GameObjectType("Asteroid"))
 	{
-		shared_ptr<GameObject> explosion = CreateExplosion();
-		explosion->SetPosition(object->GetPosition());
-		explosion->SetRotation(object->GetRotation());
-		mGameWorld->AddObject(explosion);
-		mAsteroidCount--;
-		if (mAsteroidCount <= 0)
+		if (mState == STATE_PLAYING)
 		{
-			SetTimer(500, START_NEXT_LEVEL);
+			shared_ptr<GameObject> explosion = CreateExplosion();
+			explosion->SetPosition(object->GetPosition());
+			explosion->SetRotation(object->GetRotation());
+			mGameWorld->AddObject(explosion);
+			mAsteroidCount--;
+			if (mAsteroidCount <= 0)
+			{
+				SetTimer(500, START_NEXT_LEVEL);
+			}
 		}
 	}
 }
@@ -273,7 +291,24 @@ void Asteroids::OnTimer(int value)
 	{
 		mGameOverLabel->SetVisible(true);
 	}
+	if (value == BOMB_COOLDOWN) {
+		if (!mBombReady){
 
+			mBombCooldown--;
+			if (mBombCooldown <= 0) {
+				mBombCooldown = 0;
+				mBombReady = true;
+			}
+			else
+			{
+				SetTimer(1000, BOMB_COOLDOWN);
+			}
+
+			UpdateBombGUI();
+
+
+		}
+	}
 }
 
 // PROTECTED INSTANCE METHODS /////////////////////////////////////////////////
@@ -300,6 +335,7 @@ shared_ptr<GameObject> Asteroids::CreateSpaceship()
 void Asteroids::CreateAsteroids(const uint num_asteroids)
 {
 	mAsteroidCount = num_asteroids;
+	
 	for (uint i = 0; i < num_asteroids; i++)
 	{
 		Animation* anim_ptr = AnimationManager::GetInstance().GetAnimationByName("asteroid1");
@@ -326,6 +362,16 @@ void Asteroids::CreateGUI()
 	shared_ptr<GUIComponent> score_component
 		= static_pointer_cast<GUIComponent>(mScoreLabel);
 	mGameDisplay->GetContainer()->AddComponent(score_component, GLVector2f(0.0f, 1.0f));
+
+	mBombLabel = make_shared<GUILabel>("Bomb: READY");
+	mBombLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	mBombLabel->SetVisible(false);
+	shared_ptr<GUIComponent> bomb_component
+		= static_pointer_cast<GUIComponent>(mBombLabel);
+	mGameDisplay->GetContainer()->AddComponent(bomb_component, GLVector2f(0.0f, 0.94f));
+
+
+
 
 	// Create a new GUILabel and wrap it up in a shared_ptr
 	mLivesLabel = make_shared<GUILabel>("Lives: 3");
@@ -490,7 +536,7 @@ void Asteroids::ShowMenuGUI()
 	if (mGameOverOptionsLabel) mGameOverOptionsLabel->SetVisible(false);
 
 	if (mGameOverScoresLabel) mGameOverScoresLabel->SetVisible(false);
-
+	ClearObjects();
 
 
 }
@@ -500,18 +546,23 @@ void Asteroids::StartGameplay() {
 	mState = STATE_PLAYING;
 	mEnteredName = "";
 	mCurrentScore = 0;
-	mNextLivesScore = 20;
+	mNextLivesScore = 500;
 	mGameOverShowingHS = false;
 	HideMenuGUI();
 
 	mPlayer.Reset(3);
 	mScoreKeeper.Reset();
-	mScoreLabel->SetText("Score: 0");
+
+	mBombReady = true;
+	mBombCooldown = 0;
+
 	UpdateLivesGUI(mPlayer.GetLives());
+	UpdateBombGUI();
 
 	mScoreLabel->SetVisible(true);
 	mLivesLabel->SetVisible(true);
 	mGameOverLabel->SetVisible(false);
+	mBombLabel->SetVisible(true);
 
 	mGameWorld->AddObject(CreateSpaceship());
 }
@@ -525,6 +576,7 @@ void Asteroids::NameEntry() {
 	mGameOverLabel->SetVisible(true);
 	mScoreLabel->SetVisible(false);
 	mLivesLabel->SetVisible(false);
+	mBombLabel->SetVisible(false);
 
 	if (mEnterNameLabel) mEnterNameLabel->SetVisible(true);
 	if (mTypedNameLabel) mTypedNameLabel->SetVisible(true);
@@ -560,7 +612,7 @@ void Asteroids::LivesCheck(int score) {
 	{
 		mPlayer.AddLife(1);
 		UpdateLivesGUI(mPlayer.GetLives());
-		mNextLivesScore += 1000;
+		mNextLivesScore += 500;
 	}
 }
 
@@ -714,9 +766,13 @@ void Asteroids::ShowGameOverScreen()
 	mState = STATE_GAME_OVER;
 	UpdateHighScoreTableText();
 
+	ClearObjects();
+	CreateAsteroids(10);
+
 	mGameOverLabel->SetVisible(true);
 	mScoreLabel->SetVisible(false);
 	mLivesLabel->SetVisible(false);
+	mBombLabel->SetVisible(false);
 
 	if (mEnterNameLabel) mEnterNameLabel->SetVisible(false);
 	if (mTypedNameLabel) mTypedNameLabel->SetVisible(false);
@@ -738,6 +794,7 @@ void Asteroids::ReturnToMenu()
 	mGameOverLabel->SetVisible(false);
 	mScoreLabel->SetVisible(false);
 	mLivesLabel->SetVisible(false);
+	mBombLabel->SetVisible(false);
 
 
 	for (size_t i = 0; i < mHSRows.size(); i++)
@@ -756,12 +813,71 @@ void Asteroids::RestartGame()
 	mGameOverLabel->SetVisible(false);
 	mScoreLabel->SetVisible(false);
 	mLivesLabel->SetVisible(false);
+	mBombLabel->SetVisible(false);
 
 	StartGameplay();
 }
 
 void Asteroids::ClearObjects()
 {
+}
+
+void Asteroids::UpdateBombGUI()
+{
+	if (!mBombLabel) return;
+
+	std::ostringstream msg_stream;
+	if (mBombReady)
+	{
+		msg_stream << "Bomb: READY";
+	}
+	else
+	{
+		msg_stream << "Bomb: " << mBombCooldown << "s";
+	}
+
+	mBombLabel->SetText(msg_stream.str());
+}
+
+void Asteroids::DropBomb()
+{
+	if (mState != STATE_PLAYING) return;
+	if (!mSpaceship) return;
+	if (!mBombReady) return;
+
+	mBombReady = false;
+	mBombCooldown = 10;
+	UpdateBombGUI();
+
+	mGameWorld->AddObject(CreateBomb());
+	SetTimer(1000, BOMB_COOLDOWN);
+}
+
+
+shared_ptr<GameObject> Asteroids::CreateBomb()
+{
+	GLVector3f ship_pos = mSpaceship->GetPosition();
+	GLVector3f ship_vel = mSpaceship->GetVelocity();
+	float angle = mSpaceship->GetAngle();
+
+	GLVector3f heading(cos(DEG2RAD * angle), sin(DEG2RAD * angle), 0);
+	heading.normalize();
+
+	GLVector3f back_dir = heading * -0.5f;
+	GLVector3f bomb_position = ship_pos + (back_dir * 6.0f);
+	GLVector3f bomb_velocity = ship_vel + (back_dir * 15.0f);
+
+	shared_ptr<GameObject> bomb = make_shared<Bomb>(bomb_position, bomb_velocity, 1500);
+
+	Animation* anim_ptr = AnimationManager::GetInstance().GetAnimationByName("asteroid1");
+	shared_ptr<Sprite> bomb_sprite =
+		make_shared<Sprite>(anim_ptr->GetWidth(), anim_ptr->GetHeight(), anim_ptr);
+	bomb_sprite->SetLoopAnimation(true);
+
+	bomb->SetSprite(bomb_sprite);
+	bomb->SetScale(0.08f);
+
+	return bomb;
 }
 
 
