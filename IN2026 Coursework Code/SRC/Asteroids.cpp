@@ -12,6 +12,7 @@
 #include "GUILabel.h"
 #include "Explosion.h"
 #include "bomb.h"
+#include "BombExplosion.h"
 
 #include <fstream>
 #include <algorithm>
@@ -279,12 +280,16 @@ void Asteroids::OnTimer(int value)
 		mSpaceship->Reset();
 		mGameWorld->AddObject(mSpaceship);
 	}
+	
 
-	if (value == START_NEXT_LEVEL)
-	{
-		mLevel++;
-		int num_asteroids = 10 + 2 * mLevel;
-		CreateAsteroids(num_asteroids);
+
+		if (value == START_NEXT_LEVEL)
+		{
+			if (mState == STATE_PLAYING) {
+			mLevel++;
+			int num_asteroids = 10 + 2 * mLevel;
+			CreateAsteroids(num_asteroids);
+		}
 	}
 
 	if (value == SHOW_GAME_OVER)
@@ -536,7 +541,7 @@ void Asteroids::ShowMenuGUI()
 	if (mGameOverOptionsLabel) mGameOverOptionsLabel->SetVisible(false);
 
 	if (mGameOverScoresLabel) mGameOverScoresLabel->SetVisible(false);
-	ClearObjects();
+	
 
 
 }
@@ -565,6 +570,7 @@ void Asteroids::StartGameplay() {
 	mBombLabel->SetVisible(true);
 
 	mGameWorld->AddObject(CreateSpaceship());
+
 }
 
 
@@ -759,6 +765,7 @@ void Asteroids::ShowMenuHS(bool show)
 
 	for (size_t i = 0; i < mHSRows.size(); i++)
 		mHSRows[i]->SetVisible(show);
+
 }
 
 void Asteroids::ShowGameOverScreen()
@@ -767,7 +774,9 @@ void Asteroids::ShowGameOverScreen()
 	UpdateHighScoreTableText();
 
 	ClearObjects();
+	
 	CreateAsteroids(10);
+	
 
 	mGameOverLabel->SetVisible(true);
 	mScoreLabel->SetVisible(false);
@@ -782,6 +791,9 @@ void Asteroids::ShowGameOverScreen()
 
 	for (size_t i = 0; i < mHSRows.size(); i++)
 		mHSRows[i]->SetVisible(true);
+
+
+	
 }
 
 void Asteroids::ReturnToMenu()
@@ -800,7 +812,10 @@ void Asteroids::ReturnToMenu()
 	for (size_t i = 0; i < mHSRows.size(); i++)
 		mHSRows[i]->SetVisible(false);
 
+	CreateAsteroids(10);
 	ShowMenuGUI();
+	
+
 }
 
 void Asteroids::RestartGame()
@@ -820,6 +835,18 @@ void Asteroids::RestartGame()
 
 void Asteroids::ClearObjects()
 {
+	shared_ptr<GameObject> explosion = CreateExplosion();
+	
+	explosion->SetPosition(GLVector3f(0,0,0));
+	explosion->SetRotation(0);
+	mGameWorld->AddObject(explosion);
+
+	shared_ptr<GameObject> expl = make_shared<BombExplosion>();
+	expl->SetBoundingShape(make_shared<BoundingSphere>(expl->GetThisPtr(), 500.0f));
+	expl->SetPosition(GLVector3f(0, 0, 0));
+	mGameWorld->AddObject(expl);
+
+	mAsteroidCount = 0;
 }
 
 void Asteroids::UpdateBombGUI()
@@ -863,7 +890,7 @@ shared_ptr<GameObject> Asteroids::CreateBomb()
 	GLVector3f heading(cos(DEG2RAD * angle), sin(DEG2RAD * angle), 0);
 	heading.normalize();
 
-	GLVector3f back_dir = heading * -0.5f;
+	GLVector3f back_dir = heading * -2.0f;
 	GLVector3f bomb_position = ship_pos + (back_dir * 6.0f);
 	GLVector3f bomb_velocity = ship_vel + (back_dir * 15.0f);
 
