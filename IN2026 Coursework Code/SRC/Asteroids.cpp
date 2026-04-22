@@ -283,6 +283,7 @@ void Asteroids::OnTimer(int value)
 		mSpaceship->SetInvulnerable(3000);
 		mGameWorld->AddObject(mSpaceship);
 		UpdateINVGUI();
+		SetTimer(100, INV_TICK);
 	}
 	
 
@@ -316,6 +317,13 @@ void Asteroids::OnTimer(int value)
 			UpdateBombGUI();
 
 
+		}
+	}
+	if (value == INV_TICK) {
+		UpdateINVGUI();
+
+		if (mSpaceship && mSpaceship->IsInvulnerable()) {
+			SetTimer(100, INV_TICK);
 		}
 	}
 }
@@ -583,7 +591,9 @@ void Asteroids::StartGameplay() {
 	
 
 	mGameWorld->AddObject(CreateSpaceship());
+
 	UpdateINVGUI();
+	SetTimer(100, INV_TICK);
 
 
 }
