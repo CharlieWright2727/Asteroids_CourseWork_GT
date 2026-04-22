@@ -20,6 +20,10 @@ public:
 	virtual void Rotate(float r);
 	virtual void Shoot(void);
 
+	void SetInvulnerable(int ms);
+	bool IsInvulnerable() const { return mInvulnerable; }
+	int GetInvulnerableTime() const { return mInvulnerableTime;  }
+
 	void SetSpaceshipShape(shared_ptr<Shape> spaceship_shape) { mSpaceshipShape = spaceship_shape; }
 	void SetThrusterShape(shared_ptr<Shape> thruster_shape) { mThrusterShape = thruster_shape; }
 	void SetBulletShape(shared_ptr<Shape> bullet_shape) { mBulletShape = bullet_shape; }
@@ -29,6 +33,8 @@ public:
 
 private:
 	float mThrust;
+	bool mInvulnerable;
+	int mInvulnerableTime;
 
 	shared_ptr<Shape> mSpaceshipShape;
 	shared_ptr<Shape> mThrusterShape;

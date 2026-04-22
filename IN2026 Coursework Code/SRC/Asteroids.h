@@ -71,6 +71,7 @@ private:
 	shared_ptr<GUILabel> mGameOverLabel;
 
 	shared_ptr<GUILabel> mBombLabel;
+	shared_ptr<GUILabel> mINVLabel;
 
 	shared_ptr<GUILabel> mTitleLabel;
 	shared_ptr<GUILabel> mStartLabel;
@@ -129,6 +130,8 @@ private:
 	void ClearObjects();
 	void UpdateNameGUI();
 
+	void UpdateINVGUI();
+
 	void UpdateLivesGUI(int lives);
 	void LivesCheck(int score);
 
@@ -149,6 +152,8 @@ private:
 	const static uint START_NEXT_LEVEL = 1;
 	const static uint CREATE_NEW_PLAYER = 2;
 	const static uint BOMB_COOLDOWN = 3;
+	const static uint INV_TICK = 4;
+
 
 
 	ScoreKeeper mScoreKeeper;

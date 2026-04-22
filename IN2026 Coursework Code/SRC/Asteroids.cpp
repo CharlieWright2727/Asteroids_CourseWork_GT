@@ -91,6 +91,8 @@ void Asteroids::Start()
 	mLivesLabel->SetVisible(false);
 	mGameOverLabel->SetVisible(false);
 	mBombLabel->SetVisible(false);
+	mINVLabel->SetVisible(false);
+
 
 	CreateMenuGUI();
 	LoadHighScores();
@@ -278,7 +280,9 @@ void Asteroids::OnTimer(int value)
 	if (value == CREATE_NEW_PLAYER)
 	{
 		mSpaceship->Reset();
+		mSpaceship->SetInvulnerable(3000);
 		mGameWorld->AddObject(mSpaceship);
+		UpdateINVGUI();
 	}
 	
 
@@ -332,6 +336,7 @@ shared_ptr<GameObject> Asteroids::CreateSpaceship()
 	mSpaceship->SetScale(0.1f);
 	// Reset spaceship back to centre of the world
 	mSpaceship->Reset();
+	mSpaceship->SetInvulnerable(3000);
 	// Return the spaceship so it can be added to the world
 	return mSpaceship;
 
@@ -374,6 +379,13 @@ void Asteroids::CreateGUI()
 	shared_ptr<GUIComponent> bomb_component
 		= static_pointer_cast<GUIComponent>(mBombLabel);
 	mGameDisplay->GetContainer()->AddComponent(bomb_component, GLVector2f(0.0f, 0.94f));
+
+	mINVLabel = make_shared<GUILabel>("");
+	mINVLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	mINVLabel->SetVisible(false);
+	shared_ptr<GUIComponent> invulnerable_component
+		= static_pointer_cast<GUIComponent>(mINVLabel);
+	mGameDisplay->GetContainer()->AddComponent(invulnerable_component, GLVector2f(0.0f, 0.88f));
 
 
 
@@ -568,8 +580,11 @@ void Asteroids::StartGameplay() {
 	mLivesLabel->SetVisible(true);
 	mGameOverLabel->SetVisible(false);
 	mBombLabel->SetVisible(true);
+	
 
 	mGameWorld->AddObject(CreateSpaceship());
+	UpdateINVGUI();
+
 
 }
 
@@ -583,6 +598,7 @@ void Asteroids::NameEntry() {
 	mScoreLabel->SetVisible(false);
 	mLivesLabel->SetVisible(false);
 	mBombLabel->SetVisible(false);
+	mINVLabel->SetVisible(false);
 
 	if (mEnterNameLabel) mEnterNameLabel->SetVisible(true);
 	if (mTypedNameLabel) mTypedNameLabel->SetVisible(true);
@@ -601,6 +617,23 @@ void Asteroids::UpdateNameGUI() {
 		std::ostringstream msg;
 		msg << mEnteredName;
 		mTypedNameLabel->SetText(msg.str());
+	}
+}
+
+void Asteroids::UpdateINVGUI() {
+	if (!mINVLabel || !mSpaceship) return;
+	if (mSpaceship->IsInvulnerable()) {
+		int m = mSpaceship->GetInvulnerableTime();
+		int t = (m + 99) / 100;
+
+		std::ostringstream msg_stream;
+		msg_stream << "INVULNERABLE: " << (t / 10) << "." << (t % 10) << "s";
+
+		mINVLabel->SetText(msg_stream.str());
+		mINVLabel->SetVisible(true);
+	}
+	else {
+		mINVLabel->SetVisible(false);
 	}
 }
 
@@ -782,6 +815,7 @@ void Asteroids::ShowGameOverScreen()
 	mScoreLabel->SetVisible(false);
 	mLivesLabel->SetVisible(false);
 	mBombLabel->SetVisible(false);
+	mINVLabel->SetVisible(false);
 
 	if (mEnterNameLabel) mEnterNameLabel->SetVisible(false);
 	if (mTypedNameLabel) mTypedNameLabel->SetVisible(false);
@@ -791,9 +825,6 @@ void Asteroids::ShowGameOverScreen()
 
 	for (size_t i = 0; i < mHSRows.size(); i++)
 		mHSRows[i]->SetVisible(true);
-
-
-	
 }
 
 void Asteroids::ReturnToMenu()
@@ -807,6 +838,7 @@ void Asteroids::ReturnToMenu()
 	mScoreLabel->SetVisible(false);
 	mLivesLabel->SetVisible(false);
 	mBombLabel->SetVisible(false);
+	mINVLabel->SetVisible(false);
 
 
 	for (size_t i = 0; i < mHSRows.size(); i++)
@@ -814,8 +846,6 @@ void Asteroids::ReturnToMenu()
 
 	CreateAsteroids(10);
 	ShowMenuGUI();
-	
-
 }
 
 void Asteroids::RestartGame()
@@ -829,7 +859,9 @@ void Asteroids::RestartGame()
 	mScoreLabel->SetVisible(false);
 	mLivesLabel->SetVisible(false);
 	mBombLabel->SetVisible(false);
+	mINVLabel->SetVisible(false);
 
+	CreateAsteroids(10);
 	StartGameplay();
 }
 

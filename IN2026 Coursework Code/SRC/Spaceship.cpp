@@ -10,19 +10,28 @@ using namespace std;
 
 /**  Default constructor. */
 Spaceship::Spaceship()
-	: GameObject("Spaceship"), mThrust(0)
+	: GameObject("Spaceship"), 
+	mThrust(0),
+	mInvulnerable(false),
+	mInvulnerableTime(0)
 {
 }
 
 /** Construct a spaceship with given position, velocity, acceleration, angle, and rotation. */
 Spaceship::Spaceship(GLVector3f p, GLVector3f v, GLVector3f a, GLfloat h, GLfloat r)
-	: GameObject("Spaceship", p, v, a, h, r), mThrust(0)
+	: GameObject("Spaceship", p, v, a, h, r), 
+	mThrust(0),
+	mInvulnerable(false),
+	mInvulnerableTime(0)
 {
 }
 
 /** Copy constructor. */
 Spaceship::Spaceship(const Spaceship& s)
-	: GameObject(s), mThrust(0)
+	: GameObject(s), 
+	mThrust(0),
+	mInvulnerable(s.mInvulnerable),
+	mInvulnerableTime(s.mInvulnerableTime)
 {
 }
 
@@ -38,6 +47,14 @@ void Spaceship::Update(int t)
 {
 	// Call parent update function
 	GameObject::Update(t);
+
+	if (mInvulnerable) {
+		mInvulnerableTime -= t;
+		if (mInvulnerableTime <= 0) {
+			mInvulnerableTime = 0;
+			mInvulnerable = false;
+		}
+	}
 }
 
 /** Render this spaceship. */
@@ -52,7 +69,10 @@ void Spaceship::Render(void)
 
 	GameObject::Render();
 }
-
+void Spaceship::SetInvulnerable(int ms) {
+	mInvulnerable = true;
+	mInvulnerableTime = ms;
+}
 /** Fire the rockets. */
 void Spaceship::Thrust(float t)
 {
@@ -94,6 +114,7 @@ void Spaceship::Shoot(void)
 
 bool Spaceship::CollisionTest(shared_ptr<GameObject> o)
 {
+	if (mInvulnerable) return false;
 	if (o->GetType() != GameObjectType("Asteroid")) return false;
 	if (mBoundingShape.get() == NULL) return false;
 	if (o->GetBoundingShape().get() == NULL) return false;
@@ -101,6 +122,7 @@ bool Spaceship::CollisionTest(shared_ptr<GameObject> o)
 }
 
 void Spaceship::OnCollision(const GameObjectList &objects)
-{
+{	
+	if (mInvulnerable) return;
 	mWorld->FlagForRemoval(GetThisPtr());
 }
