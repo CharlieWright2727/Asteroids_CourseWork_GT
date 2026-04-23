@@ -10,6 +10,8 @@
 #include "Player.h"
 #include "ScoreKeeper.h"
 #include "InvPickup.h"
+#include "LifePickup.h"
+
 
 #include <vector>
 
@@ -34,6 +36,7 @@ struct HighScoreEntry
 {
 	string name;
 	int score;
+	char dif;
 };
 
 class Asteroids : public GameSession, public IKeyboardListener, public IGameWorldListener, public IScoreListener, public IPlayerListener
@@ -68,6 +71,9 @@ public:
 
 	// Override the default implementation of ITimerListener ////////////////////
 	void OnTimer(int value);
+	void GrantLife();
+
+	
 
 private:
 	shared_ptr<Spaceship> mSpaceship;
@@ -163,11 +169,18 @@ private:
 	float mRight;
 	int mInvttl;
 	int mInvDuration;
+	char mDifSign;
+	int mPickupFreq;
+	int mScaler;
 
 
 	shared_ptr<GameObject> CreateExplosion();
 	shared_ptr<GameObject> CreateBomb();
 	shared_ptr<GameObject> CreateInvPickup(GLVector3f pos);
+	shared_ptr<GameObject> CreateLifePickup(GLVector3f pos);
+
+
+
 
 	const static uint SHOW_GAME_OVER = 0;
 	const static uint START_NEXT_LEVEL = 1;

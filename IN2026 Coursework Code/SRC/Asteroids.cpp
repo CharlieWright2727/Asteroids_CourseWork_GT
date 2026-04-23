@@ -1,3 +1,4 @@
+
 #include "Asteroid.h"
 #include "Asteroids.h"
 #include "Animation.h"
@@ -14,6 +15,7 @@
 #include "bomb.h"
 #include "BombExplosion.h"
 #include "InvPickup.h"
+#include "LifePickup.h"
 
 #include <fstream>
 #include <algorithm>
@@ -49,6 +51,10 @@ Asteroids::Asteroids(int argc, char* argv[])
 	mRight = -90.0f;
 	mInvttl = 8000;
 	mInvDuration = 4000;
+	mPickupFreq = 5.0f;
+	mScaler = 1;
+	mDifSign = 'E';
+
 
 	mBombReady = true;
 	mBombCooldown = 0;
@@ -90,6 +96,8 @@ void Asteroids::Start()
 	Animation* explosion_anim = AnimationManager::GetInstance().CreateAnimationFromFile("explosion", 64, 1024, 64, 64, "explosion_fs.png");
 	Animation* asteroid1_anim = AnimationManager::GetInstance().CreateAnimationFromFile("asteroid1", 128, 8192, 128, 128, "asteroid1_fs.png");
 	Animation* spaceship_anim = AnimationManager::GetInstance().CreateAnimationFromFile("spaceship", 128, 128, 128, 128, "spaceship_fs.png");
+	Animation* invPickup_anim = AnimationManager::GetInstance().CreateAnimationFromFile("inv", 128, 128, 128, 128, "invPickup.png");
+	Animation* lifePickup_anim = AnimationManager::GetInstance().CreateAnimationFromFile("life", 128, 128, 128, 128, "LifePickup.png");
 
 	// Create a spaceship and add it to the world
 
@@ -288,10 +296,12 @@ void Asteroids::OnObjectRemoved(GameWorld* world, shared_ptr<GameObject> object)
 			explosion->SetRotation(object->GetRotation());
 			mGameWorld->AddObject(explosion);
 
-			if (mInvPickupActive && rand() % 5 == 0){
+			if (mInvPickupActive && rand() % (mPickupFreq*2) == 0) {
 				mGameWorld->AddObject(CreateInvPickup(object->GetPosition()));
 			}
-
+			if (mInvPickupActive && rand() % (mPickupFreq * 4) == 0) {
+				mGameWorld->AddObject(CreateLifePickup(object->GetPosition()));
+			}
 
 			mAsteroidCount--;
 			if (mAsteroidCount <= 0)
@@ -321,7 +331,7 @@ void Asteroids::OnTimer(int value)
 		{
 			if (mState == STATE_PLAYING) {
 			mLevel++;
-			int num_asteroids = 10 + 2 * mLevel;
+			int num_asteroids = 10 + 2 * mLevel * mScaler;
 			mSpaceship->SetInvulnerable(1000);
 			UpdateINVGUI();
 			SetTimer(100, INV_TICK);
@@ -386,16 +396,34 @@ shared_ptr<GameObject> Asteroids::CreateSpaceship()
 shared_ptr<GameObject> Asteroids::CreateInvPickup(GLVector3f pos) {
 	shared_ptr<InvPickup> pickup = make_shared<InvPickup>(mInvttl, mInvDuration);
 
-	pickup->SetBoundingShape(make_shared<BoundingSphere>(pickup->GetThisPtr(), 10.0f));
+	pickup->SetBoundingShape(make_shared<BoundingSphere>(pickup->GetThisPtr(), 7.0f));
 	pickup->SetTargetShip(mSpaceship);
 
-	Animation* anim_ptr = AnimationManager::GetInstance().GetAnimationByName("spaceship");
+	Animation* anim_ptr = AnimationManager::GetInstance().GetAnimationByName("inv");
 	shared_ptr<Sprite> pickup_sprite =
 		make_shared<Sprite>(anim_ptr->GetWidth(), anim_ptr->GetHeight(), anim_ptr);
 
 	pickup->SetSprite(pickup_sprite);
 	pickup->SetScale(0.1f);
-	pickup->SetPosition(10.0f);
+	pickup->SetPosition(pos);
+
+	return pickup;
+}
+
+shared_ptr<GameObject> Asteroids::CreateLifePickup(GLVector3f pos) {
+	shared_ptr<LifePickup> pickup = make_shared<LifePickup>(mInvttl);
+
+	pickup->SetBoundingShape(make_shared<BoundingSphere>(pickup->GetThisPtr(), 7.0f));
+	pickup->SetTargetShip(mSpaceship);
+	pickup->SetAsteroidsTarget(this);
+
+	Animation* anim_ptr = AnimationManager::GetInstance().GetAnimationByName("life");
+	shared_ptr<Sprite> pickup_sprite =
+		make_shared<Sprite>(anim_ptr->GetWidth(), anim_ptr->GetHeight(), anim_ptr);
+
+	pickup->SetSprite(pickup_sprite);
+	pickup->SetScale(0.1f);
+	pickup->SetPosition(pos);
 
 	return pickup;
 }
@@ -414,6 +442,9 @@ void Asteroids::ApplyDifficultySettings() {
 		mRight = -90.0f;
 		mInvttl = 8000;
 		mInvDuration = 4000;
+		mPickupFreq = 5;
+		mScaler = 1;
+		mDifSign = 'E';
 		break;
 
 	case MEDIUM:
@@ -428,6 +459,9 @@ void Asteroids::ApplyDifficultySettings() {
 		mRight = -120.0f;
 		mInvttl = 5000;
 		mInvDuration = 3000;
+		mDifSign = 'M';
+		mPickupFreq = 7.5;
+		mScaler = 2;
 		break;
 
 	case HARD:
@@ -442,6 +476,9 @@ void Asteroids::ApplyDifficultySettings() {
 		mRight = -130.0f;
 		mInvttl = 0;
 		mInvDuration = 0;
+		mPickupFreq = 0;
+		mDifSign = 'H';
+		mScaler = 3;
 		break;
 	}
 }
@@ -534,7 +571,7 @@ void Asteroids::CreateMenuGUI() {
 	mDifficultyLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
 	mDifficultyLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
 
-	mInstructionsTextLabel = make_shared<GUILabel>(" L/R = Rotate, U/D = Move, Space = shoot ");
+	mInstructionsTextLabel = make_shared<GUILabel>(" Arrows = move, Space = shoot,B = drop bomb, coloured ships = buffs!");
 	mInstructionsTextLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
 	mInstructionsTextLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
 	mInstructionsTextLabel->SetVisible(false);
@@ -632,12 +669,12 @@ void Asteroids::HideMenuGUI() {
 
 	if (mGameOverOptionsLabel) mGameOverOptionsLabel->SetVisible(false);
 	if (mGameOverScoresLabel) mGameOverScoresLabel->SetVisible(false);
-
+	if (mDifficultyLabel) mDifficultyLabel->SetVisible(false);
 	if (mHighScoreTableLabel) mHighScoreTableLabel->SetVisible(false);
 
 	for (size_t i = 0; i < mHSRows.size(); i++)
 		mHSRows[i]->SetVisible(false);
-	if (mDifficultyLabel) mDifficultyLabel->SetVisible(false);
+	
 
 	mMenuShowingHS = false;
 
@@ -793,6 +830,10 @@ void Asteroids::LivesCheck(int score) {
 	}
 }
 
+void Asteroids::GrantLife() {
+	mPlayer.AddLife(1);
+	UpdateLivesGUI(mPlayer.GetLives());
+}
 
 void Asteroids::OnScoreChanged(int score)
 {
@@ -851,12 +892,14 @@ void Asteroids::LoadHighScores()
 
 	string name;
 	int score;
+	char dif;
 
-	while (file >> name >> score)
+	while (file >> name >> score >> dif)
 	{
 		HighScoreEntry entry;
 		entry.name = name;
 		entry.score = score;
+		entry.dif = dif;
 		mHighScores.push_back(entry);
 	}
 
@@ -876,7 +919,7 @@ void Asteroids::WriteHighScores()
 
 	for (size_t i = 0; i < mHighScores.size(); ++i)
 	{
-		file << mHighScores[i].name << " " << mHighScores[i].score << std::endl;
+		file << mHighScores[i].name << " " << mHighScores[i].score << " " << mHighScores[i].dif << std::endl;
 	}
 }
 
@@ -887,6 +930,7 @@ void Asteroids::SaveHighScore(const string& name, int score)
 	HighScoreEntry entry;
 	entry.name = name;
 	entry.score = score;
+	entry.dif = mDifSign;
 	mHighScores.push_back(entry);
 
 	std::sort(mHighScores.begin(), mHighScores.end(),
@@ -913,7 +957,7 @@ void Asteroids::UpdateHighScoreTableText()
 		std::ostringstream line;
 
 		if (i < (int)mHighScores.size())
-			line << (i + 1) << ". " << mHighScores[i].name << " " << mHighScores[i].score;
+			line << (i + 1) << ". " << mHighScores[i].name << " " << mHighScores[i].score << " " << mHighScores[i].dif;
 		else
 			line << (i + 1) << ". -----";
 
@@ -930,6 +974,8 @@ void Asteroids::ShowMenuHS(bool show)
 	if (mTitleLabel) mTitleLabel->SetVisible(!show);
 	if (mStartLabel) mStartLabel->SetVisible(!show);
 	if (mInstructionsLabel) mInstructionsLabel->SetVisible(!show);
+	if (mStartLabel) mStartLabel->SetVisible(!show);
+	if (mDifficultyLabel) mDifficultyLabel->SetVisible(!show);
 	if (mInstructionsTextLabel) mInstructionsTextLabel->SetVisible(false);
 	if (mHighScoreLabel) mHighScoreLabel->SetVisible(!show);
 	if (mHighScoreTableLabel) mHighScoreTableLabel->SetVisible(show);
