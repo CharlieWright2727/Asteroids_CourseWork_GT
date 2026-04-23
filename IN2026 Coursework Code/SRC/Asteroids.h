@@ -9,6 +9,7 @@
 #include "IScoreListener.h" 
 #include "Player.h"
 #include "ScoreKeeper.h"
+#include "InvPickup.h"
 
 #include <vector>
 
@@ -113,6 +114,7 @@ private:
 
 	void ResetSpaceship();
 	shared_ptr<GameObject> CreateSpaceship();
+	
 	void CreateGUI();
 	void CreateAsteroids(const uint num_asteroids);
 
@@ -147,6 +149,7 @@ private:
 
 	shared_ptr<GameObject> CreateExplosion();
 	shared_ptr<GameObject> CreateBomb();
+	shared_ptr<GameObject> CreateInvPickup(GLVector3f pos);
 
 	const static uint SHOW_GAME_OVER = 0;
 	const static uint START_NEXT_LEVEL = 1;

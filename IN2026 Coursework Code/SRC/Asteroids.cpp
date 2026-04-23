@@ -13,6 +13,7 @@
 #include "Explosion.h"
 #include "bomb.h"
 #include "BombExplosion.h"
+#include "InvPickup.h"
 
 #include <fstream>
 #include <algorithm>
@@ -293,7 +294,11 @@ void Asteroids::OnTimer(int value)
 			if (mState == STATE_PLAYING) {
 			mLevel++;
 			int num_asteroids = 10 + 2 * mLevel;
+			mSpaceship->SetInvulnerable(1000);
+			UpdateINVGUI();
+			SetTimer(100, INV_TICK);
 			CreateAsteroids(num_asteroids);
+			CreateInvPickup(0.0f);
 		}
 	}
 
@@ -349,6 +354,23 @@ shared_ptr<GameObject> Asteroids::CreateSpaceship()
 	return mSpaceship;
 
 }
+
+shared_ptr<GameObject> Asteroids::CreateInvPickup(GLVector3f pos) {
+	shared_ptr<InvPickup> pickup = make_shared<InvPickup>(4000, 5000);
+
+	pickup->SetBoundingShape(make_shared<BoundingSphere>(pickup->GetThisPtr(), 3.0f));
+	Animation* anim_ptr = AnimationManager::GetInstance().GetAnimationByName("spcaeship");
+	shared_ptr<Sprite> pickup_sprite =
+		make_shared<Sprite>(anim_ptr->GetWidth(), anim_ptr->GetHeight(), anim_ptr);
+
+	pickup->SetSprite(pickup_sprite);
+	pickup->SetScale(0.05f);
+	pickup->SetPosition(pos);
+
+	return pickup;
+}
+
+
 
 void Asteroids::CreateAsteroids(const uint num_asteroids)
 {
