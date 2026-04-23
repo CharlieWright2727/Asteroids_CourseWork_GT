@@ -39,9 +39,20 @@ Asteroids::Asteroids(int argc, char* argv[])
 	mExtraLivesEnabled = true;
 	mNextLivesScore = 20;
 
+	mDifficulty = EASY;
+	mInvPickupActive = true;
+	mSpawnInvMs = 3000;
+	mStartAsteroids = 10;
+	mFwd = 10.0f;
+	mRev = -5.0f;
+	mLeft = 90.0f;
+	mRight = -90.0f;
+	mInvttl = 8000;
+	mInvDuration = 4000;
+
 	mBombReady = true;
 	mBombCooldown = 0;
-
+	ApplyDifficultySettings();
 }
 
 /** Destructor. */
@@ -83,7 +94,8 @@ void Asteroids::Start()
 	// Create a spaceship and add it to the world
 
 	// Create some asteroids and add them to the world
-	CreateAsteroids(10);
+	ApplyDifficultySettings();
+	CreateAsteroids(mStartAsteroids);
 
 	//Create the GUI
 	CreateGUI();
@@ -142,6 +154,16 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 		case 'h':
 		case 'H':
 			ShowMenuHS(!mMenuShowingHS);
+			break;
+
+		case 'd':
+		case 'D':
+			if (mDifficulty == EASY) mDifficulty = MEDIUM;
+			else if (mDifficulty == MEDIUM) mDifficulty = HARD;
+			else if (mDifficulty == HARD) mDifficulty = EASY;
+
+			ApplyDifficultySettings();
+			UpdateDifficultyGUI();
 			break;
 
 		default:
@@ -221,13 +243,13 @@ void Asteroids::OnSpecialKeyPressed(int key, int x, int y)
 	switch (key)
 	{
 		// If up arrow key is pressed start applying forward thrust
-	case GLUT_KEY_UP: mSpaceship->Thrust(10); break;
+	case GLUT_KEY_UP: mSpaceship->Thrust(mFwd); break;
 		// If left arrow key is pressed start rotating anti-clockwise
-	case GLUT_KEY_LEFT: mSpaceship->Rotate(90); break;
+	case GLUT_KEY_LEFT: mSpaceship->Rotate(mLeft); break;
 		// If right arrow key is pressed start rotating clockwise
-	case GLUT_KEY_RIGHT: mSpaceship->Rotate(-90); break;
+	case GLUT_KEY_RIGHT: mSpaceship->Rotate(mRight); break;
 		// create difficulty stat and disable this on harder difficulty make forward thrust slowe and rotations imbalanced
-	case GLUT_KEY_DOWN: mSpaceship->Thrust(-5); break;
+	case GLUT_KEY_DOWN: mSpaceship->Thrust(mRev); break;
 		// Default case - do nothing
 
 	default: break;
@@ -266,7 +288,7 @@ void Asteroids::OnObjectRemoved(GameWorld* world, shared_ptr<GameObject> object)
 			explosion->SetRotation(object->GetRotation());
 			mGameWorld->AddObject(explosion);
 
-			if (rand() % 5 == 0){
+			if (mInvPickupActive && rand() % 5 == 0){
 				mGameWorld->AddObject(CreateInvPickup(object->GetPosition()));
 			}
 
@@ -287,7 +309,7 @@ void Asteroids::OnTimer(int value)
 	if (value == CREATE_NEW_PLAYER)
 	{
 		mSpaceship->Reset();
-		mSpaceship->SetInvulnerable(3000);
+		mSpaceship->SetInvulnerable(mSpawnInvMs);
 		mGameWorld->AddObject(mSpaceship);
 		UpdateINVGUI();
 		SetTimer(100, INV_TICK);
@@ -355,14 +377,14 @@ shared_ptr<GameObject> Asteroids::CreateSpaceship()
 	mSpaceship->SetScale(0.1f);
 	// Reset spaceship back to centre of the world
 	mSpaceship->Reset();
-	mSpaceship->SetInvulnerable(3000);
+	mSpaceship->SetInvulnerable(mSpawnInvMs);
 	// Return the spaceship so it can be added to the world
 	return mSpaceship;
 
 }
 
 shared_ptr<GameObject> Asteroids::CreateInvPickup(GLVector3f pos) {
-	shared_ptr<InvPickup> pickup = make_shared<InvPickup>(10000, 5000);
+	shared_ptr<InvPickup> pickup = make_shared<InvPickup>(mInvttl, mInvDuration);
 
 	pickup->SetBoundingShape(make_shared<BoundingSphere>(pickup->GetThisPtr(), 10.0f));
 	pickup->SetTargetShip(mSpaceship);
@@ -378,7 +400,51 @@ shared_ptr<GameObject> Asteroids::CreateInvPickup(GLVector3f pos) {
 	return pickup;
 }
 
+void Asteroids::ApplyDifficultySettings() {
+	switch (mDifficulty) {
+	case EASY:
+		mExtraLivesEnabled = true;
+		mInvPickupActive = true;
+		mNextLivesScore = 500;
+		mSpawnInvMs = 3000;
+		mStartAsteroids = 10;
+		mFwd = 10.0f;
+		mRev = -5.0f;
+		mLeft = 90.0f;
+		mRight = -90.0f;
+		mInvttl = 8000;
+		mInvDuration = 4000;
+		break;
 
+	case MEDIUM:
+		mExtraLivesEnabled = true;
+		mInvPickupActive = true;
+		mNextLivesScore = 1000;
+		mSpawnInvMs = 2000;
+		mStartAsteroids = 10;
+		mFwd = 9.0f;
+		mRev = -3.0f;
+		mLeft = 75.0f;
+		mRight = -120.0f;
+		mInvttl = 5000;
+		mInvDuration = 3000;
+		break;
+
+	case HARD:
+		mExtraLivesEnabled = false;
+		mInvPickupActive = false;
+		mNextLivesScore = 9999;
+		mSpawnInvMs = 1000;
+		mStartAsteroids = 13;
+		mFwd = 8.0f;
+		mRev = -2.0f;
+		mLeft = 60.0f;
+		mRight = -130.0f;
+		mInvttl = 0;
+		mInvDuration = 0;
+		break;
+	}
+}
 
 void Asteroids::CreateAsteroids(const uint num_asteroids)
 {
@@ -464,6 +530,10 @@ void Asteroids::CreateMenuGUI() {
 	mInstructionsLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
 	mInstructionsLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
 
+	mDifficultyLabel = make_shared<GUILabel>("D - Difficulty: Easy");
+	mDifficultyLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+	mDifficultyLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
+
 	mInstructionsTextLabel = make_shared<GUILabel>(" L/R = Rotate, U/D = Move, Space = shoot ");
 	mInstructionsTextLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
 	mInstructionsTextLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_BOTTOM);
@@ -531,6 +601,8 @@ void Asteroids::CreateMenuGUI() {
 	mGameDisplay->GetContainer()->AddComponent(
 		static_pointer_cast<GUIComponent>(mHighScoreTableLabel), GLVector2f(0.5f, 0.20f));
 
+	mGameDisplay->GetContainer()->AddComponent(
+		static_pointer_cast<GUIComponent>(mDifficultyLabel), GLVector2f(0.5f, 0.10f));
 
 
 	mGameDisplay->GetContainer()->AddComponent(
@@ -565,7 +637,7 @@ void Asteroids::HideMenuGUI() {
 
 	for (size_t i = 0; i < mHSRows.size(); i++)
 		mHSRows[i]->SetVisible(false);
-
+	if (mDifficultyLabel) mDifficultyLabel->SetVisible(false);
 
 	mMenuShowingHS = false;
 
@@ -591,6 +663,10 @@ void Asteroids::ShowMenuGUI()
 	if (mGameOverOptionsLabel) mGameOverOptionsLabel->SetVisible(false);
 
 	if (mGameOverScoresLabel) mGameOverScoresLabel->SetVisible(false);
+
+	if (mDifficultyLabel) mDifficultyLabel->SetVisible(true);
+
+
 	
 
 
@@ -601,7 +677,7 @@ void Asteroids::StartGameplay() {
 	mState = STATE_PLAYING;
 	mEnteredName = "";
 	mCurrentScore = 0;
-	mNextLivesScore = 500;
+	ApplyDifficultySettings();
 	mGameOverShowingHS = false;
 	HideMenuGUI();
 
@@ -661,6 +737,22 @@ void Asteroids::UpdateNameGUI() {
 	}
 }
 
+
+void Asteroids::UpdateDifficultyGUI() {
+	if (!mDifficultyLabel) return;
+
+	switch (mDifficulty) {
+	case EASY:
+		mDifficultyLabel->SetText("D - Difficulty: Easy");
+		break;
+	case MEDIUM:
+		mDifficultyLabel->SetText("D - Difficulty: Meidum");
+		break;
+	case HARD:
+		mDifficultyLabel->SetText("D - Difficulty: Hard");
+		break;
+	}
+}
 void Asteroids::UpdateINVGUI() {
 	if (!mINVLabel || !mSpaceship) return;
 	if (mSpaceship->IsInvulnerable()) {
@@ -692,7 +784,12 @@ void Asteroids::LivesCheck(int score) {
 	{
 		mPlayer.AddLife(1);
 		UpdateLivesGUI(mPlayer.GetLives());
-		mNextLivesScore += 500;
+		if (mDifficulty == EASY) {
+			mNextLivesScore += 500;
+		}
+		if (mDifficulty == MEDIUM) {
+			mNextLivesScore += 500;
+		}
 	}
 }
 
@@ -849,7 +946,7 @@ void Asteroids::ShowGameOverScreen()
 
 	ClearObjects();
 	
-	CreateAsteroids(10);
+	CreateAsteroids(mStartAsteroids);
 	
 
 	mGameOverLabel->SetVisible(true);

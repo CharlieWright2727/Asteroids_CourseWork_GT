@@ -25,7 +25,11 @@ enum GameState
 	STATE_ENTER_NAME,
 	STATE_GAME_OVER
 };
-
+enum Difficulty {
+	EASY,
+	MEDIUM,
+	HARD
+};
 struct HighScoreEntry
 {
 	string name;
@@ -89,6 +93,8 @@ private:
 
 	vector<shared_ptr<GUILabel>> mHSRows;
 
+	shared_ptr<GUILabel> mDifficultyLabel;
+
 	GameState mState;
 
 	int mCurrentScore;
@@ -134,6 +140,9 @@ private:
 
 	void UpdateINVGUI();
 
+	void ApplyDifficultySettings();
+	void UpdateDifficultyGUI();
+
 	void UpdateLivesGUI(int lives);
 	void LivesCheck(int score);
 
@@ -144,7 +153,16 @@ private:
 	void HideMenuGUI();
 	void StartGameplay();
 
-
+	Difficulty mDifficulty;
+	bool mInvPickupActive;
+	int mSpawnInvMs;
+	int mStartAsteroids;
+	float mFwd;
+	float mRev;
+	float mLeft;
+	float mRight;
+	int mInvttl;
+	int mInvDuration;
 
 
 	shared_ptr<GameObject> CreateExplosion();
