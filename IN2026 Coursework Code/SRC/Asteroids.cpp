@@ -202,7 +202,7 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 	case ' ':
 		if (mSpaceship) mSpaceship->Shoot();
 		break;
-	// add bomb ready clause later
+		// add bomb ready clause later
 
 	case 'b':
 	case 'B':
@@ -265,6 +265,12 @@ void Asteroids::OnObjectRemoved(GameWorld* world, shared_ptr<GameObject> object)
 			explosion->SetPosition(object->GetPosition());
 			explosion->SetRotation(object->GetRotation());
 			mGameWorld->AddObject(explosion);
+
+			if (rand() % 5 == 0){
+				mGameWorld->AddObject(CreateInvPickup(object->GetPosition()));
+			}
+
+
 			mAsteroidCount--;
 			if (mAsteroidCount <= 0)
 			{
@@ -298,7 +304,7 @@ void Asteroids::OnTimer(int value)
 			UpdateINVGUI();
 			SetTimer(100, INV_TICK);
 			CreateAsteroids(num_asteroids);
-			CreateInvPickup(0.0f);
+			
 		}
 	}
 
@@ -327,7 +333,7 @@ void Asteroids::OnTimer(int value)
 	if (value == INV_TICK) {
 		UpdateINVGUI();
 
-		if (mSpaceship && mSpaceship->IsInvulnerable()) {
+		if (mState == STATE_PLAYING) {
 			SetTimer(100, INV_TICK);
 		}
 	}
@@ -356,16 +362,18 @@ shared_ptr<GameObject> Asteroids::CreateSpaceship()
 }
 
 shared_ptr<GameObject> Asteroids::CreateInvPickup(GLVector3f pos) {
-	shared_ptr<InvPickup> pickup = make_shared<InvPickup>(4000, 5000);
+	shared_ptr<InvPickup> pickup = make_shared<InvPickup>(10000, 5000);
 
-	pickup->SetBoundingShape(make_shared<BoundingSphere>(pickup->GetThisPtr(), 3.0f));
-	Animation* anim_ptr = AnimationManager::GetInstance().GetAnimationByName("spcaeship");
+	pickup->SetBoundingShape(make_shared<BoundingSphere>(pickup->GetThisPtr(), 10.0f));
+	pickup->SetTargetShip(mSpaceship);
+
+	Animation* anim_ptr = AnimationManager::GetInstance().GetAnimationByName("spaceship");
 	shared_ptr<Sprite> pickup_sprite =
 		make_shared<Sprite>(anim_ptr->GetWidth(), anim_ptr->GetHeight(), anim_ptr);
 
 	pickup->SetSprite(pickup_sprite);
-	pickup->SetScale(0.05f);
-	pickup->SetPosition(pos);
+	pickup->SetScale(0.1f);
+	pickup->SetPosition(10.0f);
 
 	return pickup;
 }
@@ -616,6 +624,7 @@ void Asteroids::StartGameplay() {
 
 	UpdateINVGUI();
 	SetTimer(100, INV_TICK);
+	
 
 
 }

@@ -18,7 +18,7 @@ void Pickup::SetTargetShip(shared_ptr<Spaceship> ship) {
 void Pickup::Update(int t) {
 	GameObject::Update(t);
 
-	mTimeToLive -= t;
+	mTimeToLive -= 1;
 	if (mTimeToLive <= 0 && mWorld) {
 		mWorld->FlagForRemoval(GetThisPtr());
 	}
