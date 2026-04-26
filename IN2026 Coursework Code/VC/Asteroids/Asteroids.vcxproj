@@ -113,6 +113,7 @@
 	<ClCompile Include="..\..\SRC\BombExplosion.cpp" />
 	 <ClCompile Include="..\..\SRC\Pickup.cpp" />
 	 <ClCompile Include="..\..\SRC\InvPickup.cpp" />
+   <ClCompile Include="..\..\SRC\LifePickup.cpp" />
 	  
 	  
 	  
@@ -132,6 +133,8 @@
 	<ClInclude Include="..\..\SRC\BombExplosion.h" />
 	<ClInclude Include="..\..\SRC\Pickup.h" />
 	<ClInclude Include="..\..\SRC\InvPickup.h" />
+  <ClInclude Include="..\..\SRC\LifePickup.h" />
+
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.vcxproj">
